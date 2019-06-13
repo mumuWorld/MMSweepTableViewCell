@@ -51,12 +51,14 @@
         _actionFinalFrameArray = [NSMutableArray array];
         _highlightColor = [UIColor lightGrayColor];
         _normalColor = [UIColor whiteColor];
+        //        [self addConstantsForSubviews];
     }
     return self;
 }
 - (void)mm_initSubView {
     _sweepContainerView = [[UIView alloc] init];
     _subContainerView = [[UIView alloc] init];
+    //    _subContainerView.backgroundColor = [UIColor whiteColor];
     UIPanGestureRecognizer *gesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(pandGesture:)];
     self.gesture = gesture;
     [_subContainerView addGestureRecognizer:self.gesture];
@@ -110,9 +112,11 @@
         
         //        NSLog(@"UIGestureRecognizerStateEnded");
         if (fabs(self.subContainerView.frame.origin.x) < _actionViewWidth *0.5) { //取消编辑
+            self.cellStates = MMSweepTVCellStateEdited;
             [self handleTapGesture:nil];
         } else { //最大展示距离
             
+            //            [self.actionFinalFrameArray removeAllObjects];
             [UIView animateWithDuration:0.25 animations:^{
                 [self recoverActionStatus:2];
             } completion:^(BOOL finished) {
@@ -256,7 +260,13 @@
         }
         return;
     }
-    self.cellStates = MMSweepTVCellStateDefault;
+    if (self.cellStates == MMSweepTVCellStateEditedScrolling) {
+        return;
+    }
+    if (self.cellStates == MMSweepTVCellStateEdited) {
+        self.cellStates = MMSweepTVCellStateEditedScrolling;
+    }
+    
     CGRect frame = self.subContainerView.frame;
     frame.origin.x = 0;
     [UIView animateWithDuration:0.25 animations:^{
@@ -267,6 +277,7 @@
     } completion:^(BOOL finished) {
         [self sweepRemoveAllAction];
         [self handleMaskViewStatus:NO];
+        self.cellStates = MMSweepTVCellStateDefault;
     }];
 }
 
